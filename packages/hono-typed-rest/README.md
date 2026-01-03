@@ -10,6 +10,12 @@ It provides tRPC-like type safety and completion while maintaining the familiar 
 - **Auto Inference**: Response types and request parameters (JSON, Query, Params) are automatically inferred based on the path.
 - **Path Completion**: Available server-side paths are automatically completed in your editor.
 
+### What it cannot do
+- **Shared Types Required**: You must be able to import `AppType` in your frontend. This works best in monorepos or with shared contract packages.
+- **JSON Only**: Currently optimized for JSON APIs. Non-JSON responses may require manual type casting.
+- **Success-Focused**: Automatically extracts 2xx success responses. Error response structures (4xx, 5xx) are currently handled via generic error objects.
+- **Runtime Validation**: This is a type-level wrapper for `fetch`. It does not perform runtime validation of the data received from the server.
+
 ## Installation
 
 ```bash
