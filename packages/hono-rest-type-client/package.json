@@ -1,0 +1,31 @@
+{
+  "name": "hono-rest-type-client",
+  "version": "0.1.0",
+  "description": "Typed REST client for Hono",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "check": "tsc --noEmit"
+  },
+  "keywords": [
+    "hono",
+    "rest",
+    "client",
+    "typed"
+  ],
+  "author": "",
+  "license": "MIT",
+  "peerDependencies": {
+    "hono": "^4.0.0"
+  },
+  "devDependencies": {
+    "hono": "^4.0.0"
+  }
+}
+
