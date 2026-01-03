@@ -19,7 +19,7 @@
     "client",
     "typed"
   ],
-  "author": "",
+  "author": "andy",
   "license": "MIT",
   "peerDependencies": {
     "hono": "^4.0.0"
