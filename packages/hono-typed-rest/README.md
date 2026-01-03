@@ -1,6 +1,14 @@
 # hono-typed-rest
 
-Typed REST client for Hono.
+A library for building type-safe REST clients from Hono's application types (`AppType`).
+It provides tRPC-like type safety and completion while maintaining the familiar `api.get("/path")` REST style, rather than RPC-style calls.
+
+## Features
+
+- **No RPC Notation**: Use `client.get("/api/user")` instead of `client.api.user.$get()`.
+- **No Code Generation**: Directly references server-side type definitions, so no build step or generated files are required.
+- **Auto Inference**: Response types and request parameters (JSON, Query, Params) are automatically inferred based on the path.
+- **Path Completion**: Available server-side paths are automatically completed in your editor.
 
 ## Installation
 
@@ -10,4 +18,32 @@ npm install hono-typed-rest
 
 ## Usage
 
+### 1. Export the AppType on the Server
 
+```typescript
+// server.ts
+import { Hono } from 'hono'
+
+const app = new Hono()
+  .get('/hello', (c) => c.json({ message: 'Hello' }))
+  .post('/user', (c) => c.json({ id: 1 }))
+
+export type AppType = typeof app
+```
+
+### 2. Use the Client in your Frontend
+
+```typescript
+import { createRestClient } from 'hono-typed-rest'
+import type { AppType } from './server'
+
+const client = createRestClient<AppType>({ baseUrl: 'https://api.example.com' })
+
+// Path is auto-completed, and 'res' is automatically typed as { message: string }
+const res = await client.get('/hello')
+
+// POST requests are also type-safe
+const user = await client.post('/user', {
+  json: { name: 'hono' } // Type-safe if schema is defined
+})
+```
