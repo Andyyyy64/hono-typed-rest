@@ -3,6 +3,9 @@
 A library for building type-safe REST clients from Hono's application types (`AppType`).
 It provides tRPC-like type safety and completion while maintaining the familiar `api.get("/path")` REST style, rather than RPC-style calls.
 
+![Completion Example](./examples/images/example.png)
+![Type Inference Example](./examples/images/example2.png)
+
 ## Features
 
 - **No RPC Notation**: Use `client.get("/api/user")` instead of `client.api.user.$get()`.
