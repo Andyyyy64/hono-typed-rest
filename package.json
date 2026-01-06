@@ -4,6 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build": "pnpm -r build",
+    "check": "pnpm -r check",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
