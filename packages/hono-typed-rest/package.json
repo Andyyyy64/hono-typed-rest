@@ -1,6 +1,6 @@
 {
   "name": "hono-typed-rest",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A library for building type-safe REST clients from Hono's application types (`AppType`).",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
