@@ -6,7 +6,7 @@
   "scripts": {
     "build": "pnpm -r build",
     "check": "pnpm -r check",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest run"
   },
   "keywords": [],
   "author": "andy",
@@ -16,6 +16,7 @@
     "@types/node": "^25.0.3",
     "hono": "^4.11.3",
     "tsup": "^8.5.1",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.16"
   }
 }

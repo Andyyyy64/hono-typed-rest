@@ -4,7 +4,7 @@ import type { EndpointFor, PathsForMethod } from '../types/endpoint';
 import type { SuccessResponse } from '../types/output';
 import type { JsonInput, QueryInput, ParamInput } from '../types/input';
 import type { Default } from '../types/utils';
-import { request, RequestOptions } from './request';
+import { request, type RequestOptions } from './request';
 import type { ClientOptions } from '../adapters/fetch';
 
 /**
@@ -15,7 +15,9 @@ type ParamsShape = NonNullable<RequestOptions['params']>;
 
 export type MethodOptions<S, P extends ApiPaths<S>, M extends string> =
   Omit<RequestOptions, 'json' | 'query' | 'params'> &
-  ([JsonInput<EndpointFor<S, P, M>>] extends [never] ? {} : { json: JsonInput<EndpointFor<S, P, M>> }) &
+  ([JsonInput<EndpointFor<S, P, M>>] extends [never]
+    ? (Lowercase<M> extends 'post' | 'put' | 'patch' ? { json?: unknown } : {})
+    : { json: JsonInput<EndpointFor<S, P, M>> }) &
   ([QueryInput<EndpointFor<S, P, M>>] extends [never] ? {} : { query: QueryInput<EndpointFor<S, P, M>> & QueryShape }) &
   ([ParamInput<EndpointFor<S, P, M>>] extends [never] ? {} : { params: ParamInput<EndpointFor<S, P, M>> & ParamsShape });
 
