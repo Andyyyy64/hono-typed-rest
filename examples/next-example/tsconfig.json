@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ESNext",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "baseUrl": ".",
     "allowJs": true,
     "skipLibCheck": true,
@@ -12,7 +16,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
     "plugins": [
       {
@@ -20,12 +24,25 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"],
-      "hono-typed-rest": ["../../packages/hono-typed-rest/src/index.ts"],
-      "hono-typed-rest/*": ["../../packages/hono-typed-rest/src/*"]
+      "@/*": [
+        "./*"
+      ],
+      "hono-typed-rest": [
+        "../../packages/hono-typed-rest/src/index.ts"
+      ],
+      "hono-typed-rest/*": [
+        "../../packages/hono-typed-rest/src/*"
+      ]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
-

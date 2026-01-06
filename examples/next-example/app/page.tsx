@@ -1,5 +1,7 @@
 import { api } from '@/lib/api';
 
+export const dynamic = 'force-dynamic';
+
 export default async function Home() {
   // SSR with typed client!
   // 'data' is automatically inferred as { message: string }

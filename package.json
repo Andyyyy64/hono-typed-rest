@@ -1,10 +1,11 @@
 {
-  "name": "hono-typed-rest",
+  "name": "hono-typed-rest-workspace",
   "version": "1.0.0",
   "description": "",
+  "private": true,
   "main": "index.js",
   "scripts": {
-    "build": "pnpm -r build",
+    "build": "pnpm --filter ./packages/hono-typed-rest build && pnpm --filter \"./examples/*\" build",
     "check": "pnpm -r check",
     "test": "vitest run"
   },
