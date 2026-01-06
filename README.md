@@ -56,13 +56,13 @@ const user = await client.post('/user', {
 
 ## TODO
 
-- [ ] Reduce `any` fallbacks in type extraction (`ExtractSchema`) so breaking changes don’t silently erase type safety.
-- [ ] Make missing routes/methods fail with `never` (not `any`) to avoid “it compiles but is wrong”.
+- [x] Reduce `any` fallbacks in type extraction (`ExtractSchema`) so breaking changes don’t silently erase type safety.
+- [x] Make missing routes/methods fail with `never` (not `any`) to avoid “it compiles but is wrong”.
 - [ ] Clarify and harden `SuccessResponse` inference for both Hono-style schema and OpenAPI-style `{ '200': T }` output maps.
 - [ ] Improve non-JSON handling (e.g. `204 No Content`, `text`, `blob`, streaming) or document a safe escape hatch.
 - [ ] Improve error body parsing when the server returns non-JSON (text/html, plain text, empty body).
 - [ ] Cover more path-param patterns (optional params, patterns like `:id{\\d+}`) in runtime substitution.
 - [ ] Support additional methods (e.g. `head`, `options`) for parity with common Hono usage.
 - [ ] Improve adapter story (custom fetch, default headers, dynamic headers) with clear precedence rules.
-- [ ] Add tests (especially type-level tests) and CI to catch regressions when Hono types change.
+- [x] Add tests (especially type-level tests) and CI to catch regressions when Hono types change.
 - [ ] Add/expand documentation for compatibility, limitations, and real-world usage patterns (monorepo, contract package, SSR/CSR).
