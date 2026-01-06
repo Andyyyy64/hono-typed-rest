@@ -34,8 +34,17 @@ npm install hono-typed-rest
 import { Hono } from 'hono'
 
 const app = new Hono()
-  .get('/hello', (c) => c.json({ message: 'Hello' }))
-  .post('/user', (c) => c.json({ id: 1 }))
+  .get('/hello', (c) => {
+    return c.json({ message: 'Hello' })
+  })
+  .get('/post/:id', (c) => {
+    const id = c.req.param('id')
+    return c.json({ id, title: `Post ${id}` })
+  })
+  .post('/echo', async (c) => {
+    const body = await c.req.json()
+    return c.json({ echoed: body })
+  })
 
 export type AppType = typeof app
 ```
@@ -48,12 +57,19 @@ import type { AppType } from './server'
 
 const client = createRestClient<AppType>({ baseUrl: 'https://api.example.com' })
 
-// Path is auto-completed, and 'res' is automatically typed as { message: string }
+// 1. Basic GET
+// 'res' is automatically inferred as { message: string }
 const res = await client.get('/hello')
 
-// POST requests are also type-safe
-const user = await client.post('/user', {
-  json: { name: 'hono' } // Type-safe if schema is defined
+// 2. Path Parameters
+// Path is auto-completed, and 'post' is inferred as { id: string, title: string }
+const post = await client.get('/post/:id', {
+  params: { id: '123' }
+})
+
+// 3. POST Request
+const reply = await client.post('/echo', {
+  json: { text: 'hello' }
 })
 ```
 
