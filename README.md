@@ -1,7 +1,8 @@
 # hono-typed-rest
 
-A library for building type-safe REST clients from Hono's application types (`AppType`).
-It provides tRPC-like type safety and completion while maintaining the familiar `api.get("/path")` REST style, rather than RPC-style calls.
+“I love Hono’s type inference, but I don’t want RPC-style client notation.”
+
+This library gives you `api.get('/path')` with path completion and inferred input/output types from Hono's `AppType`. It’s not a replacement for `hc`; it’s a REST-style wrapper that consumes the same `AppType` contract.
 
 ![Completion Example](./examples/images/example.png)
 ![Type Inference Example](./examples/images/example2.png)
