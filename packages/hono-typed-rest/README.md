@@ -58,24 +58,47 @@ export type AppType = typeof app
 ### 2. Use the Client in your Frontend
 
 ```typescript
-import { createRestClient } from 'hono-typed-rest'
+import { createRestClient, HttpError } from 'hono-typed-rest'
 import type { AppType } from './server'
 
 const client = createRestClient<AppType>({ baseUrl: 'https://api.example.com' })
 
-// 1. Basic GET
-// 'res' is automatically inferred as { message: string }
-const res = await client.get('/hello')
+async function demo() {
+  try {
+    // 1. Basic GET
+    // 'res' is automatically inferred as { message: string }
+    const res = await client.get('/hello')
 
-// 2. Path Parameters
-// Path is auto-completed, and 'post' is inferred as { id: string, title: string }
-const post = await client.get('/post/:id', {
-  params: { id: '123' }
-})
+    // 2. Path Parameters
+    // Path is auto-completed, and 'post' is inferred as { id: string, title: string }
+    const post = await client.get('/post/:id', {
+      params: { id: '123' }
+    })
 
-// 3. POST Request
-const reply = await client.post('/echo', {
-  json: { text: 'hello' }
+    // 3. POST Request
+    const reply = await client.post('/echo', {
+      json: { text: 'hello' }
+    })
+  } catch (error) {
+    if (error instanceof HttpError) {
+      // Handle non-2xx errors
+      console.log(error.status) // e.g. 401
+      console.log(error.body)   // Parsed JSON error or raw text
+    }
+  }
+}
+```
+
+### 3. Advanced Usage (OpenAPI & 204)
+
+`hono-typed-rest` works perfectly with `@hono/zod-openapi`. It automatically extracts the `200` (or 2xx) response schema even if your route defines multiple response types (e.g., 401, 404).
+
+If your API intentionally returns an empty body (like `204 No Content`), use the `allowEmptyBody` option:
+
+```typescript
+const res = await client.delete('/post/:id', {
+  params: { id: '123' },
+  allowEmptyBody: true // Required for 204/205 responses
 })
 ```
 
