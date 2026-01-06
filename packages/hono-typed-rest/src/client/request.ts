@@ -2,6 +2,7 @@
  * Common definition for request options
  */
 import type { FetchApi } from '../adapters/fetch';
+import { HttpError, ResponseParseError } from './errors';
 
 /**
  * Common definition for request options
@@ -12,6 +13,11 @@ export interface RequestOptions extends Omit<RequestInit, 'method' | 'body'> {
   params?: Record<string, string | number | undefined>;
   query?: Record<string, string | number | boolean | (string | number | boolean)[] | undefined>;
   json?: unknown;
+  /**
+   * Explicitly allow empty-body responses only when your API intentionally returns them (e.g. 204).
+   * By default, empty bodies are rejected to keep the "JSON-only on success" assumption strict.
+   */
+  allowEmptyBody?: boolean;
 }
 
 const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -24,7 +30,7 @@ export async function request<T>(
   method: string,
   options: RequestOptions = {}
 ): Promise<T> {
-  const { baseUrl, fetch: fetchApi, params, query, json, headers: customHeaders, ...fetchOptions } = options;
+  const { baseUrl, fetch: fetchApi, params, query, json, allowEmptyBody, headers: customHeaders, ...fetchOptions } = options;
 
   // Path parameter substitution
   let urlPath = path;
@@ -84,21 +90,84 @@ export async function request<T>(
 
   const fetchFn = fetchApi ?? globalThis.fetch;
 
-  const response = await fetchFn(url, {
-    ...fetchOptions,
-    method,
-    headers,
-    body,
-  });
-
-  if (!response.ok) {
-    const errorBody = await response.json().catch(() => null);
-    throw new Error(
-      `Request failed with status ${response.status}: ${JSON.stringify(errorBody || response.statusText)}`
-    );
+  let response: Response;
+  try {
+    response = await fetchFn(url, {
+      ...fetchOptions,
+      method,
+      headers,
+      body,
+    });
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    throw new Error(`Request failed before receiving a response: ${message}`);
   }
 
-  const data = await response.json();
-  return data as T;
+  if (!response.ok) {
+    const contentType = response.headers.get('content-type');
+    const isJson = !!contentType && (contentType.includes('application/json') || contentType.includes('+json'));
+    const bodyText = await response.clone().text().catch(() => '');
+
+    const parsedBody: unknown | string | null = (() => {
+      if (!bodyText) return null;
+      if (isJson) {
+        try {
+          return JSON.parse(bodyText);
+        } catch {
+          return bodyText;
+        }
+      }
+      return bodyText;
+    })();
+
+    const message = `Request failed with status ${response.status}: ${response.statusText}`;
+    throw new HttpError({
+      message,
+      status: response.status,
+      statusText: response.statusText,
+      url,
+      method,
+      body: parsedBody,
+      headers: response.headers,
+    });
+  }
+
+  // 204/205 and HEAD are allowed to have no body by spec.
+  // We only permit returning `undefined` when explicitly enabled to keep JSON-only behavior strict.
+  if (method.toUpperCase() === 'HEAD' || response.status === 204 || response.status === 205) {
+    if (allowEmptyBody) {
+      return undefined as T;
+    }
+    throw new ResponseParseError({
+      message: `Empty response body is not allowed by default (status ${response.status}).`,
+      url,
+      method,
+      status: response.status,
+      statusText: response.statusText,
+      contentType: response.headers.get('content-type'),
+      bodyText: null,
+    });
+  }
+
+  try {
+    const data = await response.clone().json();
+    return data as T;
+  } catch {
+    const contentType = response.headers.get('content-type');
+    const bodyText = await response.text().catch(() => '');
+    const hasBody = bodyText.trim().length > 0;
+
+    throw new ResponseParseError({
+      message: hasBody
+        ? `Failed to parse response as JSON (content-type: ${contentType ?? 'unknown'}).`
+        : 'Failed to parse response as JSON (empty body).',
+      url,
+      method,
+      status: response.status,
+      statusText: response.statusText,
+      contentType,
+      bodyText: hasBody ? bodyText : null,
+    });
+  }
 }
 
