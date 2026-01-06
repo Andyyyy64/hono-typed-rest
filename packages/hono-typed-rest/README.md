@@ -1,7 +1,11 @@
 # hono-typed-rest
 
-A library for building type-safe REST clients from Hono's application types (`AppType`).
-It provides tRPC-like type safety and completion while maintaining the familiar `api.get("/path")` REST style, rather than RPC-style calls.
+“I love Hono’s type inference, but I don’t want RPC-style client notation.”
+
+This library gives you `api.get('/path')` with path completion and inferred input/output types from Hono's `AppType`. It’s not a replacement for `hc`; it’s a REST-style wrapper that consumes the same `AppType` contract.
+
+![Completion Example](./examples/images/example.png)
+![Type Inference Example](./examples/images/example2.png)
 
 ## Features
 
@@ -13,8 +17,13 @@ It provides tRPC-like type safety and completion while maintaining the familiar 
 ### What it cannot do
 - **Shared Types Required**: You must be able to import `AppType` in your frontend. This works best in monorepos or with shared contract packages.
 - **JSON Only**: Currently optimized for JSON APIs. Non-JSON responses may require manual type casting.
-- **Success-Focused**: Automatically extracts 2xx success responses. Error response structures (4xx, 5xx) are currently handled via generic error objects.
+- **Success-Focused**: Automatically extracts 2xx success responses. Non-2xx errors throw `HttpError` with parsed JSON (or raw text) attached.
 - **Runtime Validation**: This is a type-level wrapper for `fetch`. It does not perform runtime validation of the data received from the server.
+
+## Production Notes
+
+- **Assumption**: Success responses are expected to be JSON. If JSON parsing fails (or the body is unexpectedly empty), the client throws `ResponseParseError` to make the mismatch explicit.
+- **204 / Empty Body**: By default, empty-body responses are rejected to keep the JSON-only assumption strict. If you intentionally use `204 No Content`, set `allowEmptyBody: true` per request.
 
 ## Installation
 
@@ -31,8 +40,17 @@ npm install hono-typed-rest
 import { Hono } from 'hono'
 
 const app = new Hono()
-  .get('/hello', (c) => c.json({ message: 'Hello' }))
-  .post('/user', (c) => c.json({ id: 1 }))
+  .get('/hello', (c) => {
+    return c.json({ message: 'Hello' })
+  })
+  .get('/post/:id', (c) => {
+    const id = c.req.param('id')
+    return c.json({ id, title: `Post ${id}` })
+  })
+  .post('/echo', async (c) => {
+    const body = await c.req.json()
+    return c.json({ echoed: body })
+  })
 
 export type AppType = typeof app
 ```
@@ -45,12 +63,19 @@ import type { AppType } from './server'
 
 const client = createRestClient<AppType>({ baseUrl: 'https://api.example.com' })
 
-// Path is auto-completed, and 'res' is automatically typed as { message: string }
+// 1. Basic GET
+// 'res' is automatically inferred as { message: string }
 const res = await client.get('/hello')
 
-// POST requests are also type-safe
-const user = await client.post('/user', {
-  json: { name: 'hono' } // Type-safe if schema is defined
+// 2. Path Parameters
+// Path is auto-completed, and 'post' is inferred as { id: string, title: string }
+const post = await client.get('/post/:id', {
+  params: { id: '123' }
+})
+
+// 3. POST Request
+const reply = await client.post('/echo', {
+  json: { text: 'hello' }
 })
 ```
 
@@ -59,8 +84,8 @@ const user = await client.post('/user', {
 - [x] Reduce `any` fallbacks in type extraction (`ExtractSchema`) so breaking changes don’t silently erase type safety.
 - [x] Make missing routes/methods fail with `never` (not `any`) to avoid “it compiles but is wrong”.
 - [ ] Clarify and harden `SuccessResponse` inference for both Hono-style schema and OpenAPI-style `{ '200': T }` output maps.
-- [ ] Improve non-JSON handling (e.g. `204 No Content`, `text`, `blob`, streaming) or document a safe escape hatch.
-- [ ] Improve error body parsing when the server returns non-JSON (text/html, plain text, empty body).
+- [ ] Improve non-JSON handling (e.g. `text`, `blob`, streaming) or document a safe escape hatch.
+- [x] Improve error body parsing when the server returns non-JSON (text/html, plain text, empty body).
 - [ ] Cover more path-param patterns (optional params, patterns like `:id{\\d+}`) in runtime substitution.
 - [ ] Support additional methods (e.g. `head`, `options`) for parity with common Hono usage.
 - [ ] Improve adapter story (custom fetch, default headers, dynamic headers) with clear precedence rules.
