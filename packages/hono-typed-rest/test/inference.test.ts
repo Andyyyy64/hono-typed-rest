@@ -4,11 +4,13 @@ import { createRestClient } from '../src';
 
 describe('Type Inference', () => {
   beforeEach(() => {
-    // Mock global fetch to prevent tests from failing due to network errors
-    globalThis.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({}),
-    } as Response);
+    // The implementation relies on clone()/headers/status, so return a real Response.
+    globalThis.fetch = vi.fn().mockImplementation(async () => {
+      return new Response(JSON.stringify({}), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      });
+    });
   });
 
   it('should infer basic routes and response types', async () => {
