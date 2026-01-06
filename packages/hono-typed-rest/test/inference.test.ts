@@ -46,5 +46,21 @@ describe('Type Inference', () => {
     });
     expectTypeOf(res).toEqualTypeOf<{ id: string; title: 'test' }>();
   });
+
+  it('should infer routes even with a custom Env type', async () => {
+    type MyEnv = {
+      Variables: {
+        foo: string;
+      };
+    };
+
+    const app = new Hono<MyEnv>().get('/hello', (c) => c.json({ message: 'hello' as const }));
+
+    type AppType = typeof app;
+    const client = createRestClient<AppType>({ baseUrl: 'http://localhost' });
+
+    const res = await client.get('/hello');
+    expectTypeOf(res).toEqualTypeOf<{ message: 'hello' }>();
+  });
 });
 
