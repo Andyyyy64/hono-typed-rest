@@ -1,6 +1,7 @@
 import { describe, it, expectTypeOf, vi, beforeEach } from 'vitest';
 import { Hono } from 'hono';
 import { createRestClient } from '../src';
+import type { SuccessResponse } from '../src/types/output';
 
 describe('Type Inference', () => {
   beforeEach(() => {
@@ -61,6 +62,27 @@ describe('Type Inference', () => {
 
     const res = await client.get('/hello');
     expectTypeOf(res).toEqualTypeOf<{ message: 'hello' }>();
+  });
+
+  it('should extract only 2xx outputs from status-union schemas (OpenAPIHono-like)', () => {
+    type Endpoint =
+      | { status: 200; output: { id: string; name: string } }
+      | { status: 401; output: {} };
+
+    type Output = SuccessResponse<Endpoint>;
+    expectTypeOf<Output>().toEqualTypeOf<{ id: string; name: string }>();
+  });
+
+  it('should extract only 2xx outputs from OpenAPI-style output maps', () => {
+    type Endpoint = {
+      output: {
+        '200': { ok: true };
+        '401': {};
+      };
+    };
+
+    type Output = SuccessResponse<Endpoint>;
+    expectTypeOf<Output>().toEqualTypeOf<{ ok: true }>();
   });
 });
 

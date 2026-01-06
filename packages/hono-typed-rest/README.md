@@ -83,7 +83,7 @@ const reply = await client.post('/echo', {
 
 - [x] Reduce `any` fallbacks in type extraction (`ExtractSchema`) so breaking changes don’t silently erase type safety.
 - [x] Make missing routes/methods fail with `never` (not `any`) to avoid “it compiles but is wrong”.
-- [ ] Clarify and harden `SuccessResponse` inference for both Hono-style schema and OpenAPI-style `{ '200': T }` output maps.
+- [x] Clarify and harden `SuccessResponse` inference for both Hono-style schema and OpenAPI-style `{ '200': T }` output maps.
 - [ ] Improve non-JSON handling (e.g. `text`, `blob`, streaming) or document a safe escape hatch.
 - [x] Improve error body parsing when the server returns non-JSON (text/html, plain text, empty body).
 - [ ] Cover more path-param patterns (optional params, patterns like `:id{\\d+}`) in runtime substitution.
