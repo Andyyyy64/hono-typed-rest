@@ -1,15 +1,16 @@
 import type { Schema } from 'hono';
 import type { HonoBase } from 'hono/hono-base';
+import type { UnionToIntersection } from './utils';
 
 /**
- * Extracts the routing schema from a Hono application type (typeof app) or Schema type.
- * Supports HonoBase and objects with a schema property.
+ * Extracts routing schema from Hono's app type (`typeof app`) or Schema type.
+ * - If the extraction fails, it defaults to `never` instead of `any` to ensure type safety and catch issues at compile time.
  */
-export type ExtractSchema<T> = 
-  T extends { schema: infer S }
-    ? S extends Schema ? S : any
-    : T extends HonoBase<any, infer S, any, any>
-      ? S
-      : T extends Schema
-        ? T
-        : any;
+type SchemaFromHonoBase<T> = T extends HonoBase<any, infer S, any, any> ? S : never;
+type SchemaFromSchemaProp<T> = T extends { schema: infer S } ? S : never;
+
+type CandidateSchema<T> = SchemaFromHonoBase<T> | SchemaFromSchemaProp<T>;
+
+export type ExtractSchema<T> = T extends Schema
+  ? T
+  : UnionToIntersection<CandidateSchema<T> extends Schema ? CandidateSchema<T> : never>;
