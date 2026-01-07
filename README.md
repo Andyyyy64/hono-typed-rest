@@ -102,6 +102,19 @@ const res = await client.delete('/post/:id', {
 })
 ```
 
+### 4. Integration with Hono `app.request`
+
+You can pass Hono's `app.request` as the `fetch` option. This is extremely useful for testing your API without starting a real HTTP server, or for making internal requests in environments like Cloudflare Workers.
+
+```typescript
+import { createRestClient } from 'hono-typed-rest'
+import app from './server' // Your Hono app
+
+const client = createRestClient<typeof app>({
+  fetch: app.request // No network overhead!
+})
+```
+
 ## TODO
 
 - [x] Reduce `any` fallbacks in type extraction (`ExtractSchema`) so breaking changes don’t silently erase type safety.
