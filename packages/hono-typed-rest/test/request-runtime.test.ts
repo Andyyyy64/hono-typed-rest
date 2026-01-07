@@ -92,6 +92,24 @@ describe('request (runtime)', () => {
     });
     expect(res).toBeUndefined();
   });
+
+  it('should handle synchronous Response (like Hono app.request)', async () => {
+    // Mock fetch to return Response directly, not wrapped in Promise
+    const syncFetch = vi.fn().mockReturnValue(
+      new Response(JSON.stringify({ sync: true }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      })
+    );
+
+    const res = await request<{ sync: boolean }>('/x', 'GET', {
+      baseUrl: 'http://example.com',
+      fetch: syncFetch as any,
+    });
+
+    expect(res).toEqual({ sync: true });
+    expect(syncFetch).toHaveBeenCalled();
+  });
 });
 
 
